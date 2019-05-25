@@ -25,9 +25,10 @@ public class Event {
 	private String description;
 	private boolean single;
 	private Date start;
+	private String eventOwner;
 	
-	@ManyToMany(mappedBy = "events")
-	private Set<Calendar> calendars;
+	//@ManyToMany(mappedBy = "events")
+	//private Set<Calendar> calendars;
 	
 
 	public Long getId() {
@@ -76,6 +77,14 @@ public class Event {
 
 	public void setStart(Date start) {
 		this.start = start;
+	}
+
+	public String getEventOwner() {
+		return eventOwner;
+	}
+
+	public void setEventOwner(String eventOwner) {
+		this.eventOwner = eventOwner;
 	}
 	
 }
