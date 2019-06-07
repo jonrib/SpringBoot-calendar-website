@@ -43,6 +43,15 @@
 		  $("#modal-btn-no").on("click", function(){
 		    $("#confirm-modal").modal('hide');
 		  });
+		  
+	   $("#modalDis-btn-yes").on("click", function(){
+			    disapproveEventActual(parseInt($('body').find('[id*=disapproveID]').html()));
+			    $("#disapprove-modal").modal('hide');
+			  });
+			  
+			  $("#modalDis-btn-no").on("click", function(){
+			    $("#disapprove-modal").modal('hide');
+			  });
 	  
 	  
     var calendarEl = document.getElementById('calendar');
@@ -111,9 +120,10 @@
 	     
 	     if (info.event.extendedProps.single == true){
 	    	 $el.append('<a style="color: black" onclick="javascript:removeEvent('+info.event.id+')"><div class="glyphicon glyphicon-trash"></div></a>');
+	     }else{
+	    	 $el.append('<a style="color: black" onclick="javascript:approveEvent('+info.event.id+')"><div class="glyphicon glyphicon-thumbs-up"></div></a><br />');
+	    	 $el.append('<a style="color: black" onclick="javascript:disapproveEvent('+info.event.id+')"><div class="glyphicon glyphicon-thumbs-down"></div></a>');
 	     }
-	     
-	     console.log(info);
 	     
 	     $el.attr('event-id', (typeof info.event.id == 'undefined' ? '' : info.event.id));
 
@@ -165,6 +175,60 @@
   		$('[id *=removeID]').remove();
   		$('body').append("<div id='#removeID'>"+ eventId +"</div>");
   		$("#confirm-modal").modal('show');
+  	}
+  	
+  	function disapproveEvent(eventId){
+  		$('[id *=disapproveID]').remove();
+  		$('body').append("<div id='#disapproveID'>"+ eventId +"</div>");
+  		$("#disapprovalReason").val('');
+  		$("#disapprove-modal").modal('show');
+  	}
+  	
+  	function disapproveEventActual(eventId){
+  		$.ajax({
+			    type: "GET",
+			    contentType: "application/json",
+			    url: "/disapproveEvent",
+			    data: {id: eventId, comm: $("#disapprovalReason").val()},
+			    dataType: 'json',
+			    timeout: 600000,
+			    success: function (data) { 
+			    },
+			     error: function (e) {
+			    	 if (e.responseText = "Event disapproved"){
+			    		 
+			    		 $("[id*=emptyAlert]").hide();
+			    		 $("[id*=eventDisapproved]").show();
+			    		 setTimeout(function(){$("[id*=eventDisapproved]").hide(); $("[id*=emptyAlert]").show();location.reload();},2500);
+			    	 }else{
+			     		 alert(e.responseText);
+			    	 }
+			     }
+				});
+  	}
+  	
+  	
+  	function approveEvent(eventId){
+  		$.ajax({
+			    type: "GET",
+			    contentType: "application/json",
+			    url: "/approveEvent",
+			    data: {id: eventId},
+			    dataType: 'json',
+			    timeout: 600000,
+			    success: function (data) { 
+			    },
+			     error: function (e) {
+			    	 if (e.responseText = "Event approved"){
+			    		 
+			    		 $("[id*=emptyAlert]").hide();
+			    		 $("[id*=eventApproved]").show();
+			    		 setTimeout(function(){$("[id*=eventApproved]").hide(); $("[id*=emptyAlert]").show();location.reload();},2500);
+			    	 }else{
+			     		 alert(e.responseText);
+			    	 }
+			     }
+				});
   	}
   
     function doAddEvent(){
@@ -224,9 +288,9 @@
        if (!isError){
        	$("#eventModal").modal('toggle');
        	 var single = true;
-       	 if (users != ""){
-       		 single = false;
-       	 }
+       	 //if (users != ""){
+       		// single = false;
+       	 //}
        	 var date = new Date(dateStr); // will be in local time
 
          $.ajax({
@@ -297,6 +361,30 @@
   </div>
 </div>
 
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="disapprove-modal">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Disapprove event?</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container">
+         Reason for disapproval:
+         <div class="row">
+         	 <div class='col-sm-2'><input id="disapprovalReason" type='text' class="form-control" /></div>
+         </div>
+       </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" id="modalDis-btn-yes">OK</button>
+        <button type="button" class="btn btn-primary" id="modalDis-btn-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" tabindex="-1" role="dialog" id="eventModal">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -358,6 +446,12 @@
 
 <div id="eventAdded" class="alert alert-success " role="alert" style="display: none;">
   Event succesfully added to calendar
+</div>
+<div id="eventApproved" class="alert alert-success " role="alert" style="display: none;">
+  Event succesfully approved
+</div>
+<div id="eventDisapproved" class="alert alert-success " role="alert" style="display: none;">
+  Event succesfully disapproved
 </div>
 <div id="eventRemoved" class="alert alert-success " role="alert" style="display: none;">
   Event succesfully removed from calendar

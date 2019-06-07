@@ -52,12 +52,13 @@ public class DataController {
 	 @RequestMapping(value = "/addEvent")
 	 public ResponseEntity<String> addEvent(@RequestParam String title, @RequestParam String start, @RequestParam String users, @RequestParam String eventDescription, @RequestParam String type) throws UnsupportedEncodingException, ParseException {
 		 Event event = new Event();
+		 String loggedIn = securityService.findLoggedInUsername();
 		 event.setTitle(URLDecoder.decode(title, "UTF-8"));
 		 Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(URLDecoder.decode(start, "UTF-8"));
 		 event.setStart(date);
 		 event.setSingle(true);
 		 event.setDescription(eventDescription);
-		 event.setEventOwner(securityService.findLoggedInUsername());
+		 event.setEventOwner(loggedIn);
 		 event.setType(Integer.parseUnsignedInt(type));
 		 
 		 Calendar cal = calendarService.getCalendarByUsername(securityService.findLoggedInUsername());
@@ -71,12 +72,12 @@ public class DataController {
 		 evnt.setStart(dat);
 		 evnt.setSingle(false);
 		 evnt.setDescription(eventDescription);
-		 evnt.setEventOwner(securityService.findLoggedInUsername());
+		 evnt.setEventOwner(loggedIn);
 		 evnt.setType(Integer.parseUnsignedInt(type));
 		 
 		 String[] usernames = users.split(",");
 		 for (String user : usernames) {
-			 if (!user.equals("")) {
+			 if (!user.equals("") && !user.equals(loggedIn)) {
 				 Calendar usrCal = calendarService.getCalendarByUsername(user.trim());
 				 usrCal.getEvents().add(evnt);
 				 calendarService.save(usrCal);
@@ -96,10 +97,67 @@ public class DataController {
 		 for (Event event : cal.getEvents()) {
 			 if (event.getId() == Integer.parseInt(id)) {
 				 aevent = event;
+				 break;
 			 }
 		 }
 		 
 		 cal.getEvents().remove(aevent);
+		 calendarService.save(cal);
+		 
+	 }
+	 
+	 @RequestMapping(value = "/approveEvent")
+	 public void approveEvent(@RequestParam String id) throws UnsupportedEncodingException, ParseException {
+		 Event sideEvent = null;
+		 Calendar cal = calendarService.getCalendarByUsername(securityService.findLoggedInUsername());
+		 for (Event event : cal.getEvents()) {
+			 if (event.getId() == Integer.parseInt(id)) {
+				 sideEvent = event;
+				 break;
+			 }
+		 }
+		 sideEvent.setSingle(true);
+		 //cal.getEvents().remove(aevent);
+		 calendarService.save(cal);
+		 
+		 Event mainEvent = null;
+		 cal = calendarService.getCalendarByUsername(sideEvent.getEventOwner());
+		 for (Event event : cal.getEvents()) {
+			 if (event.getStart().compareTo(sideEvent.getStart()) == 0 && event.getTitle().equals(sideEvent.getTitle())) {
+				 mainEvent = event;
+				 break;
+			 }
+		 }
+		 mainEvent.setDescription(mainEvent.getDescription() + " {" + securityService.findLoggedInUsername() + " approved!} ");
+		 //cal.getEvents().remove(aevent);
+		 calendarService.save(cal);
+		 
+	 }
+	 
+	 @RequestMapping(value = "/disapproveEvent")
+	 public void disapproveEvent(@RequestParam String id, @RequestParam String comm) throws UnsupportedEncodingException, ParseException {
+		 Event sideEvent = null;
+		 Calendar cal = calendarService.getCalendarByUsername(securityService.findLoggedInUsername());
+		 for (Event event : cal.getEvents()) {
+			 if (event.getId() == Integer.parseInt(id)) {
+				 sideEvent = event;
+				 break;
+			 }
+		 }
+		 
+		 cal.getEvents().remove(sideEvent);
+		 calendarService.save(cal);
+		 
+		 Event mainEvent = null;
+		 cal = calendarService.getCalendarByUsername(sideEvent.getEventOwner());
+		 for (Event event : cal.getEvents()) {
+			 if (event.getStart().compareTo(sideEvent.getStart()) == 0 && event.getTitle().equals(sideEvent.getTitle())) {
+				 mainEvent = event;
+				 break;
+			 }
+		 }
+		 mainEvent.setDescription(mainEvent.getDescription() + " {" + securityService.findLoggedInUsername() + " denied! with comment: "+comm+"} ");
+		 //cal.getEvents().remove(aevent);
 		 calendarService.save(cal);
 		 
 	 }
