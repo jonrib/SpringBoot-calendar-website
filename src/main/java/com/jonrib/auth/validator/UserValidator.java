@@ -13,6 +13,10 @@ import com.jonrib.auth.service.UserService;
 public class UserValidator implements Validator {
     @Autowired
     private UserService userService;
+    
+    public UserValidator(UserService userService) {
+		this.userService = userService;
+	}
 
     @Override
     public boolean supports(Class<?> aClass) {

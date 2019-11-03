@@ -9,21 +9,23 @@ import com.jonrib.auth.model.Calendar;
 import com.jonrib.auth.model.Event;
 import com.jonrib.auth.repository.CalendarRepository;
 
+import lombok.RequiredArgsConstructor;
 import net.bytebuddy.asm.Advice.OffsetMapping.ForAllArguments;
 
 @Service
 public class CalendarServiceImpl implements CalendarService {
-	
 	@Autowired
-	CalendarRepository calendarRepository;
-	
+	private CalendarRepository calendarRepository;
 	@Autowired
-	CalendarRepository userRepository;
+	private CalendarRepository userRepository;
 
 	@Override
-	public void save(Calendar calendar) {
-		calendarRepository.save(calendar);
-		
+	public Object save(Calendar calendar) {
+		return calendarRepository.save(calendar);
+	}
+	public CalendarServiceImpl(CalendarRepository calendarRepository, CalendarRepository userRepository) {
+		this.calendarRepository = calendarRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -44,9 +46,13 @@ public class CalendarServiceImpl implements CalendarService {
 				cale = cal;
 			}
 		}
-		for (Event ev : cale.getEvents()) {
-			if (ev.getStart().compareTo(date) == 0) {
-				return ev;
+		if (cale == null)
+			return null;
+		else {
+			for (Event ev : cale.getEvents()) {
+				if (ev.getStart().compareTo(date) == 0) {
+					return ev;
+				}
 			}
 		}
 		return null;

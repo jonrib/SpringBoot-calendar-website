@@ -33,6 +33,12 @@ public class DataController {
 	 @Autowired
 	 private UserService userService;
 	 
+	 public DataController(SecurityService securityService, CalendarService calendarService, UserService userService) {
+		this.securityService = securityService;
+		this.calendarService = calendarService;
+		this.userService = userService;
+	}
+	 
 	 @RequestMapping(value = "/getCalendar")
 	 public ResponseEntity<Calendar> getCalendar() {
 		 Calendar cal = calendarService.getCalendarByUsername(securityService.findLoggedInUsername());

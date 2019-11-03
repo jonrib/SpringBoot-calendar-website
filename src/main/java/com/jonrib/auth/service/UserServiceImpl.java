@@ -19,12 +19,18 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    
+    public UserServiceImpl(UserRepository userRep, RoleRepository roleRep, BCryptPasswordEncoder encoder) {
+		this.userRepository = userRep;
+		this.roleRepository = roleRep;
+		this.bCryptPasswordEncoder = encoder;
+	}
 
     @Override
-    public void save(User user) {
+    public Object save(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setRoles(new HashSet<>(roleRepository.findAll()));
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Override

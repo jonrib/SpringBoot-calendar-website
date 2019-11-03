@@ -20,6 +20,10 @@ import java.util.Set;
 public class UserDetailsServiceImpl implements UserDetailsService{
     @Autowired
     private UserRepository userRepository;
+    
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
     @Override
     @Transactional(readOnly = true)

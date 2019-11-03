@@ -20,6 +20,11 @@ public class SecurityServiceImpl implements SecurityService{
     private UserDetailsService userDetailsService;
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityServiceImpl.class);
+    
+    public SecurityServiceImpl(UserDetailsService userDetailsService, AuthenticationManager auth) {
+		this.userDetailsService = userDetailsService;
+		this.authenticationManager = auth;
+	}
 
     @Override
     public String findLoggedInUsername() {
@@ -34,7 +39,7 @@ public class SecurityServiceImpl implements SecurityService{
     public void autoLogin(String username, String password) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-
+        
         authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         if (usernamePasswordAuthenticationToken.isAuthenticated()) {

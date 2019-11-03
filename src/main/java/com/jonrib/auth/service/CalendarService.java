@@ -6,7 +6,7 @@ import com.jonrib.auth.model.Calendar;
 import com.jonrib.auth.model.Event;
 
 public interface CalendarService {
-	void save(Calendar calendar);
+	Object save(Calendar calendar);
 	
 	Calendar getCalendarByUsername(String username);
 	
